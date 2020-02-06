@@ -16,7 +16,7 @@ VALUES
 ('Senior HR', 60000, 4),
 ('HR assistant', 45000, 4);
 
-INSERT INTO employees(first_name, last_name, role_id, manager_id)
+INSERT INTO employee(first_name, last_name, role_id, manager_id)
 VALUES
 ('Arthur', 'Decaprio', 1, NULL),
 ('Brad', 'Chadwick', 2, 1),
