@@ -1,6 +1,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-
+let departmentObj = {};
+let departmentName = [];
 const connection = mysql.createConnection({
     host: "localhost",
 
@@ -38,38 +39,38 @@ const start = () => {
         ]
     })
         .then(function (answer) {
-            
-    switch (answer.action) {
-    case 'View all departments':
-    viewDepartments();
-    break;
 
-     case 'View all roles':
-    viewRoles();
-    break;
+            switch (answer.action) {
+                case 'View all departments':
+                    viewDepartments();
+                    break;
 
-    case 'View all employees':
-    viewEmployees();
-    break;
+                case 'View all roles':
+                    viewRoles();
+                    break;
 
-    case 'Add a department':
-    addDepartment();
-    break;
+                case 'View all employees':
+                    viewEmployees();
+                    break;
 
-    case 'Add a role':
-    addRole();
-    break;
+                case 'Add a department':
+                    addDepartment();
+                    break;
 
-    case 'Add an employee':
-    addEmployee();
-    break;
+                case 'Add a role':
+                    addRole();
+                    break;
 
-    case 'Update employee role':
-    updateRole();
-    break;
+                case 'Add an employee':
+                    addEmployee();
+                    break;
 
-    case  'Exit':
-connection.end();
+                case 'Update employee role':
+                    updateRole();
+                    break;
+
+                case 'Exit':
+                    connection.end();
             }
         })
 }
@@ -79,7 +80,7 @@ let viewDepartments = () => {
     connection.query(query, function (err, res) {
         //console.log("Departments")
         res.forEach(department => {
-            console.log(`ID: ${department.id} | Name: ${department.name}`)
+            console.log(`ID: ${department.id} | Name: ${department.dep_names}`)
         });
         start();
     });
@@ -90,7 +91,7 @@ let viewRoles = () => {
     connection.query(query, function (err, res) {
         //console.log('roles')
         res.forEach(roles => {
-            console.log(`ID: ${roles.id} | Title: ${$roles.titile} | Salary: ${roles.salary} | Department ID: ${roles.department_id}`);
+            console.log(`ID: ${roles.r_id} | Title: ${roles.titile} | Salary: ${roles.salary} | Department ID: ${roles.department_id}`);
         });
         start();
     });
@@ -101,7 +102,7 @@ let viewEmployees = () => {
     connection.query(query, function (err, res) {
         //console.log('Employees');
         res.forEach(employee => {
-            console.log(`ID: ${employee.id} | Name: ${employee.first_name} ${employee.last_name} | Role ID: ${employee.roles.id} | Manager ID: ${employee.manager_id}`);
+            console.log(`ID: ${employee.emp_id} | Name: ${employee.first_name} ${employee.last_name} | Role ID: ${employee.roles_id} | Manager ID: ${employee.manager_id}`);
         })
         start();
     });
@@ -116,51 +117,100 @@ let addDepartment = () => {
         let query = "INSERT INTO department (name) VALUES  (?)";
         connection.query(query, answer.department, function (err, res) {
             console.log(`You have added: ${answer.department}`)
+            viewDepartments();
         })
-        viewDepartments();
+
     });
 };
 
-let addRole = () => {
-    inquirer.prompt([{
-        name: "title",
-        type: "input",
-        message: "What is the title of the new role?",
-    },
-    {
-        name: "salary",
-        type: "input",
-        message: "What is the salary of the new role?",
-    },
-    {
-        namer: "departmentName",
-        type: "list",
-        message: "Which department does this role belong to?",
-        choices: () => {
-            let choicesArr = [];
-            res.forEach(res => {
-                choicesArr.push(res.name);
-                console.log(choicesArr);
-            })
-            return choicesArr;
-        }
-    }
-    ]).then(function (answer) {
-        let department = answer.departmentName;
+function lookupDepartments() {
+    return new Promise(function (resolve, reject) {
         connection.query("SELECT * FROM Department", function (err, res) {
-            if (err) throw err;
-            let newDepartment = res.filter(function (res) {
-                return res.name === department;
+            if (err) throw err;;
+
+            // departmentObj={
+            //     "Sales":{
+            //         id=1
+            //     },
+            //     "IT":{
+            //         id=2
+            //     }
+            // }
+
+            let newResArr = res.map(res => {
+
+                departmentObj = {
+
+                    id: res.id,
+                    dep_names: res.dep_names
+                }
+
+                return departmentObj
             })
-            let id = newDepartment[0].id;
+            // console.log(newResArr);
+
+            resolve(newResArr);
+        })
+    })
+}
+
+let addRole = () => {
+
+
+    lookupDepartments().then(function (res) {
+
+
+        //  console.log(res)
+        departmentName = res.map(res => res.dep_names)
+
+        console.log('result', departmentName)
+        inquirer.prompt([{
+            name: "title",
+            type: "input",
+            message: "What is the title of the new role?",
+        },
+        {
+            name: "salary",
+            type: "input",
+            message: "What is the salary of the new role?",
+        },
+        {
+
+            type: "list",
+            message: "Which department does this role belong to?",
+            choices: departmentName,
+            name: "departmentName"
+        }
+        ]).then(function (answer) {
+            let department = answer.departmentName;
+
+            console.log('res', res)
+            let department_id = res.filter(res => res.dep_names === department)
+
+            console.log("id", department_id[0].id)
+
+
             let query = "INSERT INTO roles (title, salary, department_id) VALUES(?,?,?)";
-            let values = [answer.title, parseInt(answer.salary), id]
-            connection.query(query, function (err, res) {
+            let values = [answer.title, parseInt(answer.salary), department_id[0].id]
+            connection.query(query, values, function (err, res) {
+
                 console.log(`You have added: ${(values[0])}`)
             })
+
+
+            // connection.query("SELECT * FROM Department", function (err, res) {
+            //     if (err) throw err;
+            //     let newDepartment = res.filter(function (res) {
+            //         return res.name === department;
+            //     })
+            //     let id = newDepartment[0].id;
+
+            // })
+            // viewRoles()
         })
-        viewRoles()
     })
+
+
 }
 
 async function addEmployee() {
