@@ -91,7 +91,7 @@ let viewRoles = () => {
     connection.query(query, function (err, res) {
         //console.log('roles')
         res.forEach(roles => {
-            console.log(`ID: ${roles.r_id} | Title: ${roles.titile} | Salary: ${roles.salary} | Department ID: ${roles.department_id}`);
+            console.log(`ID: ${roles.r_id} | Title: ${roles.title} | Salary: ${roles.salary} | Department ID: ${roles.department_id}`);
         });
         start();
     });
