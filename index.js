@@ -78,12 +78,12 @@ const start = () => {
 let viewDepartments = () => {
     let query = "SELECT * FROM department";
     connection.query(query, function (err, res) {
-        //console.log("Departments")
+        console.log("Departments")
         res.forEach(department => {
             console.log(`ID: ${department.id} | Name: ${department.dep_names}`)
         });
-        start();
     });
+    start();
 };
 
 let viewRoles = () => {
@@ -93,8 +93,8 @@ let viewRoles = () => {
         res.forEach(roles => {
             console.log(`ID: ${roles.r_id} | Title: ${roles.title} | Salary: ${roles.salary} | Department ID: ${roles.department_id}`);
         });
-        start();
     });
+    start();
 };
 
 let viewEmployees = () => {
@@ -104,8 +104,8 @@ let viewEmployees = () => {
         res.forEach(employee => {
             console.log(`ID: ${employee.emp_id} | Name: ${employee.first_name} ${employee.last_name} | Role ID: ${employee.roles_id} | Manager ID: ${employee.manager_id}`);
         })
-        start();
     });
+    start();
 };
 
 let addDepartment = () => {
@@ -158,7 +158,6 @@ let addRole = () => {
 
 
     lookupDepartments().then(function (res) {
-
 
         //  console.log(res)
         departmentName = res.map(res => res.dep_names)
